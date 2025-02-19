@@ -72,6 +72,7 @@ function Start-InstallGUI {
                 <Run Text="Help?"/>
             </Hyperlink>
         </Label>
+        <CheckBox x:Name="SystemInstallCheckbox" Content="System install ?" HorizontalAlignment="Left" Margin="207,280,0,0" VerticalAlignment="Top" IsChecked="True"/>
         <Grid x:Name="GridIcon" VerticalAlignment="Top" HorizontalAlignment="Right" Width="90" Height="90" Margin="0,152,10,0" Background="White">
             <Image x:Name="AppIcon" Height="90" Width="90" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
@@ -236,11 +237,18 @@ function Start-InstallGUI {
             if ($WhitelistCheckbox.IsChecked) {
                 $InstallCmd += " -WAUWhiteList"
             }
+            if ($SystemInstallCheckbox.IsChecked) {
+                $InstallScope = "system"
+            }
+            else {
+                $InstallScope = "user"
+            }
             $Win32AppArgs = @{
                 "Description"          = $IntuneDescriptionTextBox.Text
                 "AppVersion"           = $VersionTextBox.Text
                 "Notes"                = $WIGithubLink
                 "InstallCommandLine"   = $InstallCmd
+                "InstallExperience"    = $InstallScope
                 "UninstallCommandLine" = """%systemroot%\sysnative\WindowsPowerShell\v1.0\powershell.exe"" -NoProfile -ExecutionPolicy Bypass -File winget-install.ps1 -AppIDs ""$($AppInfo.id)"" -Uninstall"
                 "Verbose"              = $false
             }
@@ -253,6 +261,7 @@ function Start-InstallGUI {
             $OverrideTextBox.Text = ""
             $IntuneDescriptionTextBox.Text = ""
             $WhitelistCheckbox.IsChecked = $false
+            $SystemInstallCheckbox.IsChecked = $true
             $CreateButton.IsEnabled = $false
             $AppIcon.Source = $null
             Close-PopUp
@@ -526,7 +535,6 @@ function Invoke-IntunePackage ($Win32AppArgs) {
     # Add parameters to table for the Win32 app
     $Win32AppArgs.DisplayName = $AppInfo.PackageName
     $Win32AppArgs.FilePath = $Win32AppPackagePath
-    $Win32AppArgs.InstallExperience = "system"
     $Win32AppArgs.RestartBehavior = "suppress"
     $Win32AppArgs.DetectionRule = $DetectionRule
     $Win32AppArgs.RequirementRule = $RequirementRule
